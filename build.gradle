@@ -1,0 +1,82 @@
+plugins {
+    id 'java'
+}
+
+defaultTasks 'build'
+
+group 'org.aust'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url = 'https://sourceforge.net/projects/jsi/files/m2_repo'
+    }
+    maven {
+        url = 'https://repo.enonic.com/public/'
+    }
+    maven {
+        url 'https://jitpack.io'
+    }
+    //额外添加的库
+    maven{
+        url 'https://repo.fusesource.com/nexus/content/repositories/releases-3rd-party/'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: '*.jar')
+    implementation 'com.github.roborescue:rcrs-server:master-SNAPSHOT'
+    implementation 'com.github.roborescue:adf-core-java:master-SNAPSHOT'
+    implementation 'log4j:log4j:1.2.17'
+
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    //添加的依赖
+    implementation 'org.jetbrains:annotations:23.0.0'
+    implementation 'org.javolution:javolution:5.3.1'
+    implementation 'com.google.common:google-collect:1.0'
+    implementation 'com.vividsolutions:jts:1.11'
+    implementation 'org.uncommons.maths:uncommons-maths:1.2.2'
+    implementation 'jfree:jfreechart:1.0.13'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+javadoc {
+    options {
+        encoding = 'UTF-8'
+        addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+clean {
+    doFirst {
+        delete file(new File(rootDir, 'bin'))
+        delete file(new File(rootDir, 'build'))
+        delete file(new File(rootDir, 'precomp_data'))
+        delete file(new File(rootDir, 'test-results'))
+    }
+}
+
+[compileJava, compileTestJava].each {
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation']
+}
+
+task launch(type: JavaExec) {
+    classpath = files('lib')
+    classpath += files('.')
+    classpath += sourceSets.main.runtimeClasspath
+    mainClass = 'adf.core.Main'
+    maxHeapSize = '2048m'
+}
