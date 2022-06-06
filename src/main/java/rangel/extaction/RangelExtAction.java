@@ -17,15 +17,40 @@ import rescuecore2.worldmodel.EntityID;
 
 public abstract class RangelExtAction extends ExtAction {
 
+    /**
+     * 路径规划算法
+     */
     protected PathPlanning pathPlanning;
+
+    /**
+     * 休息阈值
+     */
     protected int thresholdRest;
+
+    /**
+     * 内核时间
+     */
     protected int kernelTime;
+
+    /**
+     * 动作目标
+     */
     protected EntityID target;
+
 
     public RangelExtAction(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
         super(ai, wi, si, moduleManager, developData);
     }
 
+
+    /**
+     * 预计算启动
+     *
+     * @param precomputeData 预计算的数据
+     * @return adf.core.component.extaction.ExtAction 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/6
+     */
     @Override
     public ExtAction precompute(PrecomputeData precomputeData) {
         super.precompute(precomputeData);
@@ -33,6 +58,7 @@ public abstract class RangelExtAction extends ExtAction {
             return this;
         }
         this.pathPlanning.precompute(precomputeData);
+        //同步内核时间
         try {
             this.kernelTime = this.scenarioInfo.getKernelTimesteps();
         } catch (NoSuchConfigOptionException e) {
@@ -41,6 +67,15 @@ public abstract class RangelExtAction extends ExtAction {
         return this;
     }
 
+
+    /**
+     * 直接启动
+     *
+     * @param precomputeData 预计算的数据
+     * @return adf.core.component.extaction.ExtAction 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/6
+     */
     @Override
     public ExtAction resume(PrecomputeData precomputeData) {
         super.resume(precomputeData);
@@ -48,6 +83,7 @@ public abstract class RangelExtAction extends ExtAction {
             return this;
         }
         this.pathPlanning.resume(precomputeData);
+        //同步内核时间
         try {
             this.kernelTime = this.scenarioInfo.getKernelTimesteps();
         } catch (NoSuchConfigOptionException e) {
@@ -56,6 +92,14 @@ public abstract class RangelExtAction extends ExtAction {
         return this;
     }
 
+
+    /**
+     * 准备
+     *
+     * @return adf.core.component.extaction.ExtAction 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/6
+     */
     @Override
     public ExtAction preparate() {
         super.preparate();
@@ -63,6 +107,7 @@ public abstract class RangelExtAction extends ExtAction {
             return this;
         }
         this.pathPlanning.preparate();
+        //同步内核时间
         try {
             this.kernelTime = this.scenarioInfo.getKernelTimesteps();
         } catch (NoSuchConfigOptionException e) {
@@ -71,6 +116,15 @@ public abstract class RangelExtAction extends ExtAction {
         return this;
     }
 
+
+    /**
+     * 更新信息
+     *
+     * @param messageManager 消息管理器
+     * @return adf.core.component.extaction.ExtAction 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/6
+     */
     @Override
     public ExtAction updateInfo(MessageManager messageManager) {
         super.updateInfo(messageManager);
@@ -81,6 +135,15 @@ public abstract class RangelExtAction extends ExtAction {
         return this;
     }
 
+
+    /**
+     * 设定动作的目标
+     *
+     * @param target 目标实体的ID
+     * @return adf.core.component.extaction.ExtAction 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/6
+     */
     @Override
     public ExtAction setTarget(EntityID target) {
         this.target = null;
@@ -94,6 +157,14 @@ public abstract class RangelExtAction extends ExtAction {
         return this;
     }
 
+
+    /**
+     * 计算接下来应该执行的动作
+     *
+     * @return adf.core.component.extaction.ExtAction 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/6
+     */
     public abstract ExtAction calc();
 
 }

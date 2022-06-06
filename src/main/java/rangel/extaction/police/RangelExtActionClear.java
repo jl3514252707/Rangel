@@ -25,8 +25,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RangelExtActionClear extends RangelExtAction {
-    private int clearDistance;
-    private int forcedMove;
+    /**
+     * 清除距离
+     */
+    private final int clearDistance;
+
+    /**
+     * 强制移动(如果智能体在一个时间内没有移动,则强制其移动)
+     */
+    private final int forcedMove;
+
+    /**
+     * 移动点缓存
+     */
     private Map<EntityID, Set<Point2D>> movePointCache;
     private int oldClearX;
     private int oldClearY;
@@ -35,10 +46,8 @@ public class RangelExtActionClear extends RangelExtAction {
     public RangelExtActionClear(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
         super(ai, wi, si, moduleManager, developData);
         this.clearDistance = si.getClearRepairDistance();
-        this.forcedMove = developData
-                .getInteger("adf.impl.extaction.DefaultExtActionClear.forcedMove", 3);
-        this.thresholdRest = developData
-                .getInteger("adf.impl.extaction.DefaultExtActionClear.rest", 100);
+        this.forcedMove = developData.getInteger("adf.impl.extaction.DefaultExtActionClear.forcedMove", 3);
+        this.thresholdRest = developData.getInteger("adf.impl.extaction.DefaultExtActionClear.rest", 100);
 
         this.target = null;
         this.movePointCache = new HashMap<>();
@@ -47,13 +56,9 @@ public class RangelExtActionClear extends RangelExtAction {
         this.count = 0;
 
         switch (si.getMode()) {
-            case PRECOMPUTATION_PHASE:
-            case PRECOMPUTED:
-            case NON_PRECOMPUTE:
-                this.pathPlanning = moduleManager.getModule(
-                        "RangelExtActionClear.PathPlanning",
-                        "adf.impl.module.algorithm.DijkstraPathPlanning");
-                break;
+            case PRECOMPUTATION_PHASE, PRECOMPUTED, NON_PRECOMPUTE -> this.pathPlanning = moduleManager.getModule(
+                    "RangelExtActionClear.PathPlanning",
+                    "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
     }
 
