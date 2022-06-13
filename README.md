@@ -1,45 +1,51 @@
-# `adf-sample-agent-java` Agent Development Framework Sample Agent Java
+# `Rangel` 仿真救援 安徽理工大学队伍代码
 
-(Linux) Instructions to download, build and run the sample implementation using the Agent Development Framework (ADF)
-
-## 1. Software Pre-Requisites
+## 1. 环境要求
 
 * Git
 * OpenJDK Java 17
 * Gradle
 
-## 2. Download
+## 2. 下载
 
 ```bash
-$ git clone https://github.com/roborescue/adf-sample-agent-java.git
+$ git clone https://github.com/jl3514252707/Rangel.git
 ```
 
-## 3. Compile
+## 3. 编译
 
 ```bash
-
-$ cd adf-sample-agent-java
-
 $ ./gradlew clean
+```
 
+```bash
 $ ./gradlew build
 ```
 
-## 4. Execute
+## 4. 执行
 
-The `adf-sample-agent-java` is a sample team implementation for the RCRS (`rcrs-server`) using the ADF core (`adf-core-java`).
+`Rangel`是使用ADF框架 (`adf-core-java`) 的RCRS (`rcrs-server`) 的队伍代码实现.
 
-To run the `adf-sample-agent-java`, first the `rcrs-server` must be running (Instructions of how to download, compile and run the `rcrs-server` are available at <https://github.com/roborescue/rcrs-server>).
+要运行 `Rangel`，首先必须运行 `rcrs-server`（有关如何下载、编译和运行 `rcrs-server` 的说明可在 <https://github.com/roborescue/rcrs-server> 获得）。
 
-After start the `rcrs-server`, open a new terminal window and execute
+启动 `rcrs-server` 后，打开一个新的终端窗口并执行
 
 ```bash
+$ cd script/
+```
 
-$ cd adf-sample-agent-java
+预计算启动
 
+```bash
+$ bash launch.sh -pre 1 -t 1,0,1,0,1,0 -local&&PID=$$;sleep 120;kill $PID
+```
+
+正常模式启动
+
+```bash
 $ ./launch.sh -all
 ```
 
-## 5. Support
+## 5. 支持
 
-To report a bug, suggest improvements or request support, please open an issue at GitHub <https://github.com/roborescue/rcrs-adf-sample/issues>.
+要报告错误、建议改进或请求支持，请在 GitHub <https://github.com/jl3514252707/Rangel> 上提出issue.
