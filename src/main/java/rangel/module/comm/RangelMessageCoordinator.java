@@ -15,6 +15,11 @@ import rescuecore2.standard.entities.StandardEntityURN;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 消息协调员
+ *
+ * @author 软工20-2金磊
+ */
 public class RangelMessageCoordinator extends MessageCoordinator {
 
     @Override
@@ -23,7 +28,7 @@ public class RangelMessageCoordinator extends MessageCoordinator {
                            ArrayList<CommunicationMessage> sendMessageList,
                            List<List<CommunicationMessage>> channelSendMessageList) {
 
-        // have different lists for every agent
+        //每个智能体都有不同的列表
         ArrayList<CommunicationMessage> policeMessages = new ArrayList<>();
         ArrayList<CommunicationMessage> ambulanceMessages = new ArrayList<>();
         ArrayList<CommunicationMessage> fireBrigadeMessages = new ArrayList<>();
@@ -34,7 +39,7 @@ public class RangelMessageCoordinator extends MessageCoordinator {
 
         for (CommunicationMessage msg : sendMessageList) {
             if (msg instanceof StandardMessage
-                    && !((StandardMessage) msg).isRadio()) {
+                    && !msg.isRadio()) {
                 voiceMessages.add(msg);
             } else {
                 if (msg instanceof MessageBuilding) {
