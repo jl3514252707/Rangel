@@ -530,27 +530,32 @@ public class RangelExtActionClear extends RangelExtAction {
      */
     @NotNull
     private Action getIntersectEdgeAction(double agentX, double agentY, double pointX, double pointY, Road road) {
+        //获取所有的路径点
         Set<Point2D> movePoints = this.getMovePoints(road);
         Point2D bestPoint = null;
-        double bastDistance = Double.MAX_VALUE;
+        double bestDistance = Double.MAX_VALUE;
         for (Point2D p : movePoints) {
+            //如果警察与路径点的连线没有与路相交,
             if (!this.intersect(agentX, agentY, p.getX(), p.getY(), road)) {
+                //并且目标与路径点的连线没有与路相交
                 if (!this.intersect(pointX, pointY, p.getX(), p.getY(), road)) {
-                    double distance = this.getDistance(pointX, pointY, p.getX(),
-                            p.getY());
-                    if (distance < bastDistance) {
+                    //获得目标与路径点间的距离
+                    double distance = this.getDistance(pointX, pointY, p.getX(), p.getY());
+                    //如果距离小于最佳距离,将其赋值为最佳距离
+                    if (distance < bestDistance) {
                         bestPoint = p;
-                        bastDistance = distance;
+                        bestDistance = distance;
                     }
                 }
             }
         }
+        //如果得到了最佳距离,
         if (bestPoint != null) {
             double pX = bestPoint.getX();
             double pY = bestPoint.getY();
+            //并且路的封锁情况是已知的,移动到该路径点
             if (!road.isBlockadesDefined()) {
-                return new ActionMove(Lists.newArrayList(road.getID()), (int) pX,
-                        (int) pY);
+                return new ActionMove(Lists.newArrayList(road.getID()), (int) pX, (int) pY);
             }
             ActionClear actionClear = null;
             ActionMove actionMove = null;
@@ -567,8 +572,7 @@ public class RangelExtActionClear extends RangelExtAction {
                             actionClear = new ActionClear(clearX, clearY, blockade);
                         } else {
                             if (actionClear.getTarget() != null) {
-                                Blockade another = (Blockade) this.worldInfo
-                                        .getEntity(actionClear.getTarget());
+                                Blockade another = (Blockade) this.worldInfo.getEntity(actionClear.getTarget());
                                 if (another != null && this.intersect(blockade, another)) {
                                     return new ActionClear(another);
                                 }
@@ -576,8 +580,7 @@ public class RangelExtActionClear extends RangelExtAction {
                             return actionClear;
                         }
                     } else if (actionMove == null) {
-                        actionMove = new ActionMove(Lists.newArrayList(road.getID()),
-                                (int) pX, (int) pY);
+                        actionMove = new ActionMove(Lists.newArrayList(road.getID()), (int) pX, (int) pY);
                     }
                 }
             }
@@ -641,12 +644,12 @@ public class RangelExtActionClear extends RangelExtAction {
 
 
     /**
-     * 判断警察和目标智能体间的连线是否与路相交
+     * 判断警察和目标智间的连线是否与路相交
      *
      * @param agentX 警察的位置X坐标
      * @param agentY 警察的位置Y坐标
-     * @param pointX 目标智能体的位置X坐标
-     * @param pointY 目标智能体的位置Y坐标
+     * @param pointX 目标的位置X坐标
+     * @param pointY 目标的位置Y坐标
      * @param area   路
      * @return boolean (true相交||false不相交)
      * @author 软工20-2金磊
@@ -726,12 +729,12 @@ public class RangelExtActionClear extends RangelExtAction {
 
 
     /**
-     * 判断警察和目标智能体间的连线是否与路障相交
+     * 判断警察和目标间的连线是否与路障相交
      *
      * @param agentX   警察的位置X坐标
      * @param agentY   警察的位置Y坐标
-     * @param pointX   目标智能体的位置X坐标
-     * @param pointY   目标智能体的位置Y坐标
+     * @param pointX   目标的位置X坐标
+     * @param pointY   目标的位置Y坐标
      * @param blockade 路障
      * @return boolean (true相交||false不相交)
      * @author 软工20-2金磊
@@ -748,7 +751,7 @@ public class RangelExtActionClear extends RangelExtAction {
             double startY = start.getY();
             double endX = end.getX();
             double endY = end.getY();
-            //指定第一条线的起点为警察的位置,终点为目标智能体的位置,第二条线为路障中的一条线,如果与这条线相交,说明与路障相交
+            //指定第一条线的起点为警察的位置,终点为目标的位置,第二条线为路障中的一条线,如果与这条线相交,说明与路障相交
             if (java.awt.geom.Line2D.linesIntersect(agentX, agentY, pointX, pointY, startX, startY, endX, endY)) {
                 return true;
             }
