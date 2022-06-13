@@ -50,49 +50,6 @@ public class RangelChannelSubscriber extends ChannelSubscriber {
         return index;
     }
 
-    public static void main(String[] args) {
-        int numChannels = 6;
-        int maxChannels = 2;
-        for (int i = 0; i < maxChannels; i++) {
-            System.out.println("FIREBRIGADE-" + i + ":" + getChannelNumber(StandardEntityURN.FIRE_BRIGADE, i, numChannels));
-        }
-        for (int i = 0; i < maxChannels; i++) {
-            System.out.println("POLICE-" + i + ":" + getChannelNumber(StandardEntityURN.POLICE_OFFICE, i, numChannels));
-        }
-        for (int i = 0; i < maxChannels; i++) {
-            System.out.println("AMB-" + i + ":" + getChannelNumber(StandardEntityURN.AMBULANCE_CENTRE, i, numChannels));
-        }
-    }
-
-    @Override
-    public void subscribe(@NotNull AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, MessageManager messageManager) {
-        // 一开始只订阅一次
-        if (agentInfo.getTime() == 1) {
-            //第0个频道是声音频道
-            int numChannels = scenarioInfo.getCommsChannelsCount() - 1;
-            //最大频道数
-            int maxChannelCount;
-            //智能体是否是排
-            boolean isPlatoon = isPlatoonAgent(agentInfo, worldInfo);
-            if (isPlatoon) {
-                maxChannelCount = scenarioInfo.getCommsChannelsMaxPlatoon();
-            } else {
-                maxChannelCount = scenarioInfo.getCommsChannelsMaxOffice();
-            }
-
-            //获得智能体类型
-            StandardEntityURN agentType = getAgentType(agentInfo, worldInfo);
-            //计算所有的频道号
-            int[] channels = new int[maxChannelCount];
-            for (int i = 0; i < maxChannelCount; i++) {
-                channels[i] = getChannelNumber(agentType, i, numChannels);
-            }
-
-            //订阅频道
-            messageManager.subscribeToChannels(channels);
-        }
-    }
-
     /**
      * 判断是否是排智能体
      *
@@ -121,5 +78,48 @@ public class RangelChannelSubscriber extends ChannelSubscriber {
      */
     protected StandardEntityURN getAgentType(@NotNull AgentInfo agentInfo, @NotNull WorldInfo worldInfo) {
         return Objects.requireNonNull(worldInfo.getEntity(agentInfo.getID())).getStandardURN();
+    }
+
+    public static void main(String[] args) {
+        int numChannels = 6;
+        int maxChannels = 2;
+        for (int i = 0; i < maxChannels; i++) {
+            System.out.println("FIREBRIGADE-" + i + ":" + getChannelNumber(StandardEntityURN.FIRE_BRIGADE, i, numChannels));
+        }
+        for (int i = 0; i < maxChannels; i++) {
+            System.out.println("POLICE-" + i + ":" + getChannelNumber(StandardEntityURN.POLICE_OFFICE, i, numChannels));
+        }
+        for (int i = 0; i < maxChannels; i++) {
+            System.out.println("AMB-" + i + ":" + getChannelNumber(StandardEntityURN.AMBULANCE_CENTRE, i, numChannels));
+        }
+    }
+
+    @Override
+    public void subscribe(@NotNull AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, MessageManager messageManager) {
+        // 一开始只订阅一次
+        if (agentInfo.getTime() == 1) {
+            //第0个频道是语音频道
+            int numChannels = scenarioInfo.getCommsChannelsCount() - 1;
+            //最大频道数
+            int maxChannelCount;
+            //智能体是否是排
+            boolean isPlatoon = isPlatoonAgent(agentInfo, worldInfo);
+            if (isPlatoon) {
+                maxChannelCount = scenarioInfo.getCommsChannelsMaxPlatoon();
+            } else {
+                maxChannelCount = scenarioInfo.getCommsChannelsMaxOffice();
+            }
+
+            //获得智能体类型
+            StandardEntityURN agentType = getAgentType(agentInfo, worldInfo);
+            //计算所有的频道号
+            int[] channels = new int[maxChannelCount];
+            for (int i = 0; i < maxChannelCount; i++) {
+                channels[i] = getChannelNumber(agentType, i, numChannels);
+            }
+
+            //订阅频道
+            messageManager.subscribeToChannels(channels);
+        }
     }
 }
