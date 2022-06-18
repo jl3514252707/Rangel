@@ -1,37 +1,51 @@
-## Welcome to Rangel
+# `Rangel` 仿真救援 安徽理工大学队伍代码
 
-You can use the [editor on GitHub](https://github.com/jl3514252707/Rangel/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+## 1. 环境要求
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+* Git
+* OpenJDK Java 17
+* Gradle
 
-### Markdown
+## 2. 下载
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```bash
+$ git clone https://github.com/jl3514252707/Rangel.git
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+## 3. 编译
 
-### Jekyll Themes
+```bash
+$ ./gradlew clean
+```
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/jl3514252707/Rangel/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+```bash
+$ ./gradlew build
+```
 
-### Support or Contact
+## 4. 执行
+
+`Rangel`是使用ADF框架 (`adf-core-java`) 的RCRS (`rcrs-server`) 的队伍代码实现.
+
+要运行 `Rangel`，首先必须运行 `rcrs-server`（有关如何下载、编译和运行 `rcrs-server` 的说明可在 <https://github.com/roborescue/rcrs-server> 获得）。
+
+启动 `rcrs-server` 后，打开一个新的终端窗口并执行
+
+```bash
+$ cd script/
+```
+
+预计算启动
+
+```bash
+$ bash launch.sh -pre 1 -t 1,0,1,0,1,0 -local&&PID=$$;sleep 120;kill $PID
+```
+
+正常模式启动
+
+```bash
+$ ./launch.sh -all
+```
+
+## 5. 支持
 
 Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
