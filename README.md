@@ -1,5 +1,7 @@
 # `Rangel` 仿真救援 安徽理工大学队伍代码
 
+![avatar](https://www.aust.edu.cn/__local/8/7B/80/638D1607174C29D4831915BA71E_01FFC6E0_D2E6.png)
+
 ## 1. 环境要求
 
 * Git
