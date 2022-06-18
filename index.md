@@ -1,5 +1,3 @@
-# `Rangel` 仿真救援 安徽理工大学队伍代码
-
 ## 1. 环境要求
 
 * Git
@@ -48,4 +46,4 @@ $ ./launch.sh -all
 
 ## 5. 支持
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+要报告错误、建议改进或请求支持，请在 GitHub <https://github.com/jl3514252707/Rangel> 上提出issue.
