@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rangel.extaction.RangelExtAction;
+import rangel.utils.LogHelper;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.geometry.GeometryTools2D;
 import rescuecore2.misc.geometry.Line2D;
@@ -27,6 +28,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RangelExtActionClear extends RangelExtAction {
+
+    private static final LogHelper LOGGER = new LogHelper("POLICE");
+
     /**
      * 清理能力
      */
@@ -75,6 +79,8 @@ public class RangelExtActionClear extends RangelExtAction {
                     "RangelExtActionClear.PathPlanning",
                     "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
+
+        LOGGER.setAgentInfo(agentInfo);
     }
 
 

@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rangel.extaction.RangelExtAction;
+import rangel.utils.LogHelper;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
@@ -29,6 +30,8 @@ import static rescuecore2.standard.entities.StandardEntityURN.*;
 
 public class RangelExtActionTransport extends RangelExtAction {
 
+    private static final LogHelper LOGGER=new LogHelper("AMBULANCE");
+
     public RangelExtActionTransport(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
         this.target = null;
@@ -39,6 +42,8 @@ public class RangelExtActionTransport extends RangelExtAction {
                     "RangelExtActionTransport.PathPlanning",
                     "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
+
+        LOGGER.setAgentInfo(agentInfo);
     }
 
     @Override
@@ -49,12 +54,13 @@ public class RangelExtActionTransport extends RangelExtAction {
 
         if (transportHuman != null) {
             this.result = this.calcUnload(agent, this.pathPlanning, transportHuman,
-                    this.target);
+this.target);
             if (this.result != null) {
                 return this;
             }
         }
         if (this.needRest(agent)) {
+            LOGGER.info("我需要休息");
             EntityID areaID = this.convertArea(this.target);
             ArrayList<EntityID> targets = new ArrayList<>();
             if (areaID != null) {
@@ -86,14 +92,17 @@ public class RangelExtActionTransport extends RangelExtAction {
     private Action calcRescue(AmbulanceTeam agent, PathPlanning pathPlanning, EntityID targetID) {
         StandardEntity targetEntity = this.worldInfo.getEntity(targetID);
         if (targetEntity == null) {
+            LOGGER.info("当前没有目标");
             return null;
         }
         EntityID agentPosition = agent.getPosition();
         if (targetEntity instanceof Human human) {
             if (!human.isPositionDefined()) {
+                LOGGER.info("不知道"+targetID+"的位置,不去救");
                 return null;
             }
             if (human.isHPDefined() && human.getHP() == 0) {
+                LOGGER.info(targetID+"已经死亡了");
                 return null;
             }
             EntityID targetPosition = human.getPosition();

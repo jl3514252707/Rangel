@@ -13,6 +13,7 @@ import adf.core.component.module.algorithm.PathPlanning;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rangel.extaction.RangelExtAction;
+import rangel.utils.LogHelper;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
@@ -29,6 +30,8 @@ import static rescuecore2.standard.entities.StandardEntityURN.BLOCKADE;
  */
 public class RangelExtActionRescue extends RangelExtAction {
 
+    private static final LogHelper LOGGER=new LogHelper("FIRE");
+
     public RangelExtActionRescue(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
         this.target = null;
@@ -39,6 +42,8 @@ public class RangelExtActionRescue extends RangelExtAction {
                     "RangelExtActionRescue.PathPlanning",
                     "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
+
+        LOGGER.setAgentInfo(agentInfo);
     }
 
     @Override
@@ -49,6 +54,7 @@ public class RangelExtActionRescue extends RangelExtAction {
 
         //如果自己需要休息,
         if (this.needRest(agent)) {
+            LOGGER.info("我需要休息");
             EntityID areaID = this.convertArea(this.target);
             ArrayList<EntityID> targets = new ArrayList<>();
             //如果自己现在还有目标,则将其存起来
@@ -79,6 +85,7 @@ public class RangelExtActionRescue extends RangelExtAction {
         //根据实体ID获得目标实体
         StandardEntity targetEntity = this.worldInfo.getEntity(targetID);
         if (targetEntity == null) {
+            LOGGER.info("当前没有目标");
             return null;
         }
         //获得消防队的位置
@@ -87,10 +94,12 @@ public class RangelExtActionRescue extends RangelExtAction {
         if (targetEntity instanceof Human human) {
             //如果目标的位置没有确定,没法去救,直接返回空
             if (!human.isPositionDefined()) {
+                LOGGER.info("不知道"+targetID+"的位置,不去救");
                 return null;
             }
             //如果目标的血量为0,救不了了,直接返回空
             if (human.isHPDefined() && human.getHP() == 0) {
+                LOGGER.info(targetID+"已经死亡了");
                 return null;
             }
             //获得目标人类的位置
@@ -99,6 +108,7 @@ public class RangelExtActionRescue extends RangelExtAction {
             if (agentPosition.getValue() == targetPosition.getValue()) {
                 //并且该人类的被掩埋程度大于0,开始救援,返回救援动作
                 if (human.isBuriednessDefined() && human.getBuriedness() > 0) {
+                    LOGGER.info(targetID+"被掩埋了,开始救援");
                     return new ActionRescue(human);
                 }
                 //否则没有到达目标人类的所在的位置,
@@ -107,6 +117,7 @@ public class RangelExtActionRescue extends RangelExtAction {
                 List<EntityID> path = pathPlanning.getResult(agentPosition, targetPosition);
                 //如果该路径不为空,并且路径的长度大于0,移动到目标所在的位置,返回动作移动
                 if (path != null && path.size() > 0) {
+                    LOGGER.info("并未到目标位置,前往"+targetID+"所在的位置");
                     return new ActionMove(path);
                 }
             }
@@ -126,6 +137,7 @@ public class RangelExtActionRescue extends RangelExtAction {
             List<EntityID> path = pathPlanning.getResult(agentPosition, targetEntity.getID());
             //如果该路径不为空,并且路径的长度大于0,移动到目标所在的位置,返回动作移动
             if (path != null && path.size() > 0) {
+                LOGGER.info("并未到目标位置,前往"+targetID+"所在的位置");
                 return new ActionMove(path);
             }
         }
