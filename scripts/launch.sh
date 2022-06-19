@@ -6,7 +6,7 @@ PARAMS=$*
 cd "$(dirname "$0")"
 cd ../
 
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   ./gradlew launch --args="${LOADER} ${PARAMS}"
 else
   echo "Options:"
