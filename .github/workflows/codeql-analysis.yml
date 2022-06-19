@@ -64,7 +64,7 @@ jobs:
         architecture: x64
 
     - name: Compile
-    - run: ./scripts/compile.sh
+      run: ./scripts/compile.sh
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
