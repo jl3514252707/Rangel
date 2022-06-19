@@ -2,7 +2,6 @@ package rangel.extaction.ambulance;
 
 import adf.core.agent.action.Action;
 import adf.core.agent.action.ambulance.ActionLoad;
-import adf.core.agent.action.ambulance.ActionRescue;
 import adf.core.agent.action.ambulance.ActionUnload;
 import adf.core.agent.action.common.ActionMove;
 import adf.core.agent.action.common.ActionRest;
@@ -30,7 +29,7 @@ import static rescuecore2.standard.entities.StandardEntityURN.*;
 
 public class RangelExtActionTransport extends RangelExtAction {
 
-    private static final LogHelper LOGGER=new LogHelper("AMBULANCE");
+    private static final LogHelper LOGGER = new LogHelper("AMBULANCE");
 
     public RangelExtActionTransport(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
@@ -53,8 +52,7 @@ public class RangelExtActionTransport extends RangelExtAction {
         Human transportHuman = this.agentInfo.someoneOnBoard();
 
         if (transportHuman != null) {
-            this.result = this.calcUnload(agent, this.pathPlanning, transportHuman,
-this.target);
+            this.result = this.calcUnload(agent, this.pathPlanning, transportHuman, this.target);
             if (this.result != null) {
                 return this;
             }
@@ -66,20 +64,19 @@ this.target);
             if (areaID != null) {
                 targets.add(areaID);
             }
-            this.result = this.calcRefugeAction(agent, this.pathPlanning, targets,
-                    false);
+            this.result = this.calcRefugeAction(agent, this.pathPlanning, targets, false);
             if (this.result != null) {
                 return this;
             }
         }
         if (this.target != null) {
-            this.result = this.calcRescue(agent, this.pathPlanning, this.target);
+            this.result = this.calcLoad(agent, this.pathPlanning, this.target);
         }
         return this;
     }
 
     /**
-     * 计算救援
+     * 计算装载
      *
      * @param agent        救护队
      * @param pathPlanning 路径规划
@@ -89,7 +86,7 @@ this.target);
      * @since 2022/6/4 21:23
      */
     @Nullable
-    private Action calcRescue(AmbulanceTeam agent, PathPlanning pathPlanning, EntityID targetID) {
+    private Action calcLoad(AmbulanceTeam agent, PathPlanning pathPlanning, EntityID targetID) {
         StandardEntity targetEntity = this.worldInfo.getEntity(targetID);
         if (targetEntity == null) {
             LOGGER.info("当前没有目标");
@@ -98,24 +95,26 @@ this.target);
         EntityID agentPosition = agent.getPosition();
         if (targetEntity instanceof Human human) {
             if (!human.isPositionDefined()) {
-                LOGGER.info("不知道"+targetID+"的位置,不去救");
+                LOGGER.info("不知道" + targetID + "的位置,不去救");
                 return null;
             }
             if (human.isHPDefined() && human.getHP() == 0) {
-                LOGGER.info(targetID+"已经死亡了");
+                LOGGER.info(targetID + "已经死亡了");
                 return null;
             }
             EntityID targetPosition = human.getPosition();
             if (agentPosition.getValue() == targetPosition.getValue()) {
                 if (human.isBuriednessDefined() && human.getBuriedness() > 0) {
-                    return new ActionRescue(human);
+                    LOGGER.info(targetID+"已被掩埋,无法运送");
+                    return null;
                 } else if (human.getStandardURN() == CIVILIAN) {
+                    LOGGER.info("开始将"+targetID+"搬上担架");
                     return new ActionLoad(human.getID());
                 }
             } else {
-                List<EntityID> path = pathPlanning.getResult(agentPosition,
-                        targetPosition);
+                List<EntityID> path = pathPlanning.getResult(agentPosition, targetPosition);
                 if (path != null && path.size() > 0) {
+                    LOGGER.info("开始前往"+targetID+"所在的位置");
                     return new ActionMove(path);
                 }
             }
@@ -128,9 +127,9 @@ this.target);
             }
         }
         if (targetEntity instanceof Area) {
-            List<EntityID> path = pathPlanning.getResult(agentPosition,
-                    targetEntity.getID());
+            List<EntityID> path = pathPlanning.getResult(agentPosition, targetEntity.getID());
             if (path != null && path.size() > 0) {
+                LOGGER.info("开始前往"+targetID+"所在的位置");
                 return new ActionMove(path);
             }
         }
@@ -145,8 +144,7 @@ this.target);
             return new ActionUnload();
         }
         EntityID agentPosition = agent.getPosition();
-        if (targetID == null
-                || transportHuman.getID().getValue() == targetID.getValue()) {
+        if (targetID == null || transportHuman.getID().getValue() == targetID.getValue()) {
             StandardEntity position = this.worldInfo.getEntity(agentPosition);
             if (position != null && position.getStandardURN() == REFUGE) {
                 return new ActionUnload();
@@ -210,8 +208,7 @@ this.target);
                 this.kernelTime = -1;
             }
         }
-        return damage >= this.thresholdRest
-                || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
+        return damage >= this.thresholdRest || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
     }
 
     @Nullable
@@ -241,8 +238,7 @@ this.target);
     @Nullable
     private Action calcRefugeAction(@NotNull Human human, PathPlanning pathPlanning, Collection<EntityID> targets, boolean isUnload) {
         EntityID position = human.getPosition();
-        Collection<EntityID> refuges = this.worldInfo
-                .getEntityIDsOfType(StandardEntityURN.REFUGE);
+        Collection<EntityID> refuges = this.worldInfo.getEntityIDsOfType(StandardEntityURN.REFUGE);
         int size = refuges.size();
         if (refuges.contains(position)) {
             return isUnload ? new ActionUnload() : new ActionRest();
