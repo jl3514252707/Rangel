@@ -4,7 +4,6 @@ import adf.core.agent.action.Action;
 import adf.core.agent.action.ambulance.ActionLoad;
 import adf.core.agent.action.ambulance.ActionUnload;
 import adf.core.agent.action.common.ActionMove;
-import adf.core.agent.action.common.ActionRest;
 import adf.core.agent.develop.DevelopData;
 import adf.core.agent.info.AgentInfo;
 import adf.core.agent.info.ScenarioInfo;
@@ -206,7 +205,7 @@ public class RangelExtActionTransport extends RangelExtAction {
         } else if (targetEntity instanceof Human human) {
             //并且位置确定,则计算前往避难所的动作
             if (human.isPositionDefined()) {
-                return calcRefugeAction(agent, pathPlanning, Lists.newArrayList(human.getPosition()), true);
+                return calcRefugeAction(agent, pathPlanning, Lists.newArrayList(human.getPosition()));
             }
             //没有计算处理,则继续
             //设置起点为自己所在的位置
@@ -225,12 +224,12 @@ public class RangelExtActionTransport extends RangelExtAction {
 
 
     @Nullable
-    private Action calcRefugeAction(@NotNull Human human, PathPlanning pathPlanning, Collection<EntityID> targets, boolean isUnload) {
+    private Action calcRefugeAction(@NotNull Human human, PathPlanning pathPlanning, Collection<EntityID> targets) {
         EntityID position = human.getPosition();
         Collection<EntityID> refuges = this.worldInfo.getEntityIDsOfType(StandardEntityURN.REFUGE);
         int size = refuges.size();
         if (refuges.contains(position)) {
-            return isUnload ? new ActionUnload() : new ActionRest();
+            return new ActionUnload();
         }
         List<EntityID> firstResult = null;
         while (refuges.size() > 0) {
