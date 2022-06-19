@@ -12,6 +12,11 @@ import rescuecore2.worldmodel.EntityID;
 
 import java.util.List;
 
+/**
+ * 联合动作:移动
+ *
+ * @author 软工20-2金磊
+ */
 public class RangelExtActionMove extends RangelExtAction {
 
     public RangelExtActionMove(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
