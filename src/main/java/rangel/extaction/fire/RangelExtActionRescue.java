@@ -42,8 +42,6 @@ public class RangelExtActionRescue extends RangelExtAction {
                     "RangelExtActionRescue.PathPlanning",
                     "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
-
-        LOGGER.setAgentInfo(agentInfo);
     }
 
     @Override
@@ -51,6 +49,8 @@ public class RangelExtActionRescue extends RangelExtAction {
         this.result = null;
         //消防队自己
         FireBrigade agent = (FireBrigade) this.agentInfo.me();
+
+        LOGGER.setAgentInfo(agentInfo);
 
         //如果自己需要休息,
         if (this.needRest(agent)) {

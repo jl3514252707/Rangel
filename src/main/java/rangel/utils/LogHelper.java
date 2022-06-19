@@ -50,7 +50,7 @@ public class LogHelper {
      */
     public void info(String message) {
         if (isOpen) {
-            message = "[第" + agentInfo.getTime() + "回合][" + agentInfo.getID() + "号智能体]:" + message;
+            message = "[第" + agentInfo.getTime() + "回合][" + agentInfo.me().getID() + "号智能体]:" + message;
             logger.info(message);
         }
     }

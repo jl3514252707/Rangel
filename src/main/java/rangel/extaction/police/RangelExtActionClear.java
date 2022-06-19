@@ -79,8 +79,6 @@ public class RangelExtActionClear extends RangelExtAction {
                     "RangelExtActionClear.PathPlanning",
                     "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
-
-        LOGGER.setAgentInfo(agentInfo);
     }
 
 
@@ -105,6 +103,8 @@ public class RangelExtActionClear extends RangelExtAction {
     public ExtAction calc() {
         this.result = null;
         PoliceForce policeForce = (PoliceForce) this.agentInfo.me();
+
+        LOGGER.setAgentInfo(agentInfo);
 
         //如果警察需要休息
         if (this.needRest(policeForce)) {

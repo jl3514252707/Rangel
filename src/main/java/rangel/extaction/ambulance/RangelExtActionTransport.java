@@ -41,8 +41,6 @@ public class RangelExtActionTransport extends RangelExtAction {
                     "RangelExtActionTransport.PathPlanning",
                     "adf.impl.module.algorithm.DijkstraPathPlanning");
         }
-
-        LOGGER.setAgentInfo(agentInfo);
     }
 
     @Override
@@ -50,6 +48,8 @@ public class RangelExtActionTransport extends RangelExtAction {
         this.result = null;
         AmbulanceTeam agent = (AmbulanceTeam) this.agentInfo.me();
         Human transportHuman = this.agentInfo.someoneOnBoard();
+
+        LOGGER.setAgentInfo(agentInfo);
 
         if (transportHuman != null) {
             this.result = this.calcUnload(agent, this.pathPlanning, transportHuman, this.target);
