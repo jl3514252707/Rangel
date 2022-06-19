@@ -3,7 +3,7 @@
 LOADER="adf.impl.DefaultLoader"
 PARAMS=$*
 
-cd $(dirname $0)
+cd "$(dirname "$0")"
 cd ../
 
 if [ ! -z "$1" ]; then
