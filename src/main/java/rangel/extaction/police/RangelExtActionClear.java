@@ -2,7 +2,6 @@ package rangel.extaction.police;
 
 import adf.core.agent.action.Action;
 import adf.core.agent.action.common.ActionMove;
-import adf.core.agent.action.common.ActionRest;
 import adf.core.agent.action.police.ActionClear;
 import adf.core.agent.develop.DevelopData;
 import adf.core.agent.info.AgentInfo;
@@ -10,13 +9,11 @@ import adf.core.agent.info.ScenarioInfo;
 import adf.core.agent.info.WorldInfo;
 import adf.core.agent.module.ModuleManager;
 import adf.core.component.extaction.ExtAction;
-import adf.core.component.module.algorithm.PathPlanning;
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rangel.extaction.RangelExtAction;
 import rangel.utils.LogHelper;
-import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.geometry.GeometryTools2D;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
@@ -66,7 +63,6 @@ public class RangelExtActionClear extends RangelExtAction {
         super(ai, wi, si, moduleManager, developData);
         this.clearDistance = si.getClearRepairDistance();
         this.forcedMove = developData.getInteger("adf.impl.extaction.DefaultExtActionClear.forcedMove", 3);
-        this.thresholdRest = developData.getInteger("adf.impl.extaction.DefaultExtActionClear.rest", 100);
 
         this.target = null;
         this.movePointCache = new HashMap<>();
@@ -105,19 +101,6 @@ public class RangelExtActionClear extends RangelExtAction {
         PoliceForce policeForce = (PoliceForce) this.agentInfo.me();
 
         LOGGER.setAgentInfo(agentInfo);
-
-        //如果警察需要休息
-        if (this.needRest(policeForce)) {
-            List<EntityID> list = new ArrayList<>();
-            //并且已经有目标,则将其保存到列表中
-            if (this.target != null) {
-                list.add(this.target);
-            }
-            this.result = this.calcRest(policeForce, this.pathPlanning, list);
-            if (this.result != null) {
-                return this;
-            }
-        }
 
         if (this.target == null) {
             return this;
@@ -887,66 +870,5 @@ public class RangelExtActionClear extends RangelExtAction {
             this.movePointCache.put(road.getID(), points);
         }
         return points;
-    }
-
-
-    private boolean needRest(Human agent) {
-        int hp = agent.getHP();
-        int damage = agent.getDamage();
-        if (damage == 0 || hp == 0) {
-            return false;
-        }
-        int activeTime = (hp / damage) + ((hp % damage) != 0 ? 1 : 0);
-        if (this.kernelTime == -1) {
-            try {
-                this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-            } catch (NoSuchConfigOptionException e) {
-                this.kernelTime = -1;
-            }
-        }
-        return damage >= this.thresholdRest
-                || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
-    }
-
-
-    private Action calcRest(Human human, PathPlanning pathPlanning,
-                            Collection<EntityID> targets) {
-        EntityID position = human.getPosition();
-        Collection<EntityID> refuges = this.worldInfo
-                .getEntityIDsOfType(StandardEntityURN.REFUGE);
-        int currentSize = refuges.size();
-        if (refuges.contains(position)) {
-            return new ActionRest();
-        }
-        List<EntityID> firstResult = null;
-        while (refuges.size() > 0) {
-            pathPlanning.setFrom(position);
-            pathPlanning.setDestination(refuges);
-            List<EntityID> path = pathPlanning.calc().getResult();
-            if (path != null && path.size() > 0) {
-                if (firstResult == null) {
-                    firstResult = new ArrayList<>(path);
-                    if (targets == null || targets.isEmpty()) {
-                        break;
-                    }
-                }
-                EntityID refugeID = path.get(path.size() - 1);
-                pathPlanning.setFrom(refugeID);
-                pathPlanning.setDestination(targets);
-                List<EntityID> fromRefugeToTarget = pathPlanning.calc().getResult();
-                if (fromRefugeToTarget != null && fromRefugeToTarget.size() > 0) {
-                    return new ActionMove(path);
-                }
-                refuges.remove(refugeID);
-                // remove failed
-                if (currentSize == refuges.size()) {
-                    break;
-                }
-                currentSize = refuges.size();
-            } else {
-                break;
-            }
-        }
-        return firstResult != null ? new ActionMove(firstResult) : null;
     }
 }

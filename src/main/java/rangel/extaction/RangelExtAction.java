@@ -23,11 +23,6 @@ public abstract class RangelExtAction extends ExtAction {
     protected PathPlanning pathPlanning;
 
     /**
-     * 休息阈值
-     */
-    protected int thresholdRest;
-
-    /**
      * 内核时间
      */
     protected int kernelTime;

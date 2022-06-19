@@ -10,15 +10,12 @@ import adf.core.agent.info.WorldInfo;
 import adf.core.agent.module.ModuleManager;
 import adf.core.component.extaction.ExtAction;
 import adf.core.component.module.algorithm.PathPlanning;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rangel.extaction.RangelExtAction;
 import rangel.utils.LogHelper;
-import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static rescuecore2.standard.entities.StandardEntityURN.BLOCKADE;
@@ -35,7 +32,6 @@ public class RangelExtActionRescue extends RangelExtAction {
     public RangelExtActionRescue(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
         this.target = null;
-        this.thresholdRest = developData.getInteger("adf.impl.extaction.DefaultExtActionFireRescue.rest", 100);
 
         switch (scenarioInfo.getMode()) {
             case PRECOMPUTATION_PHASE, PRECOMPUTED, NON_PRECOMPUTE -> this.pathPlanning = moduleManager.getModule(
@@ -52,16 +48,6 @@ public class RangelExtActionRescue extends RangelExtAction {
 
         LOGGER.setAgentInfo(agentInfo);
 
-        //如果自己需要休息,
-        if (this.needRest(agent)) {
-            LOGGER.info("我需要休息");
-            EntityID areaID = this.convertArea(this.target);
-            ArrayList<EntityID> targets = new ArrayList<>();
-            //如果自己现在还有目标,则将其存起来
-            if (areaID != null) {
-                targets.add(areaID);
-            }
-        }
         //如果当前目标不为空,则计算救援
         if (this.target != null) {
             this.result = this.calcRescue(agent, this.pathPlanning, this.target);
@@ -139,74 +125,6 @@ public class RangelExtActionRescue extends RangelExtAction {
             if (path != null && path.size() > 0) {
                 LOGGER.info("并未到目标位置,前往"+targetID+"所在的位置");
                 return new ActionMove(path);
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * 判断是否需要休息
-     *
-     * @param agent 执行动作的智能体
-     * @return boolean (true需要休息||false不休息)
-     * @author 软工20-2金磊
-     * @since 2022/6/13
-     */
-    private boolean needRest(@NotNull Human agent) {
-        int hp = agent.getHP();
-        int damage = agent.getDamage();
-        if (hp == 0 || damage == 0) {
-            return false;
-        }
-        int activeTime = (hp / damage) + ((hp % damage) != 0 ? 1 : 0);
-        if (this.kernelTime == -1) {
-            try {
-                this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-            } catch (NoSuchConfigOptionException e) {
-                this.kernelTime = -1;
-            }
-        }
-        return damage >= this.thresholdRest || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
-    }
-
-
-    /**
-     * 将目标转换为一个区域,例如:<br>
-     * •获得人所在区域的实体ID<br>
-     * •获得路障所在区域的实体ID
-     *
-     * @param targetID 目标的实体ID
-     * @return rescuecore2.worldmodel.EntityID
-     * @author 软工20-2金磊
-     * @since 2022/6/13
-     */
-    @Nullable
-    private EntityID convertArea(EntityID targetID) {
-        StandardEntity entity = this.worldInfo.getEntity(targetID);
-        if (entity == null) {
-            return null;
-        }
-        //如果目标实体是一个人,
-        if (entity instanceof Human human) {
-            //并且位置已知,
-            if (human.isPositionDefined()) {
-                //获得目标的位置
-                EntityID position = human.getPosition();
-                //如果该位置是一个区域,直接返回区域的实体ID
-                if (this.worldInfo.getEntity(position) instanceof Area) {
-                    return position;
-                }
-            }
-            //如果目标是一个区域,直接返回该区域的实体ID
-        } else if (entity instanceof Area) {
-            return targetID;
-            //否则如果是一个路障,
-        } else if (entity.getStandardURN() == BLOCKADE) {
-            Blockade blockade = (Blockade) entity;
-            //并且该路障的位置已知,返回该路障的位置的实体ID
-            if (blockade.isPositionDefined()) {
-                return blockade.getPosition();
             }
         }
         return null;

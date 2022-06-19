@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rangel.extaction.RangelExtAction;
 import rangel.utils.LogHelper;
-import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 
@@ -39,7 +38,6 @@ public class RangelExtActionTransport extends RangelExtAction {
     public RangelExtActionTransport(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
         this.target = null;
-        this.thresholdRest = developData.getInteger("ActionTransport.rest", 100);
 
         switch (scenarioInfo.getMode()) {
             case PRECOMPUTATION_PHASE, PRECOMPUTED, NON_PRECOMPUTE -> this.pathPlanning = moduleManager.getModule(
@@ -62,18 +60,7 @@ public class RangelExtActionTransport extends RangelExtAction {
                 return this;
             }
         }
-        if (this.needRest(agent)) {
-            LOGGER.info("我需要休息");
-            EntityID areaID = this.convertArea(this.target);
-            ArrayList<EntityID> targets = new ArrayList<>();
-            if (areaID != null) {
-                targets.add(areaID);
-            }
-            this.result = this.calcRefugeAction(agent, this.pathPlanning, targets, false);
-            if (this.result != null) {
-                return this;
-            }
-        }
+
         if (this.target != null) {
             this.result = this.calcLoad(agent, this.pathPlanning, this.target);
         }
@@ -236,47 +223,6 @@ public class RangelExtActionTransport extends RangelExtAction {
         return null;
     }
 
-
-    private boolean needRest(@NotNull Human agent) {
-        int hp = agent.getHP();
-        int damage = agent.getDamage();
-        if (hp == 0 || damage == 0) {
-            return false;
-        }
-        int activeTime = (hp / damage) + ((hp % damage) != 0 ? 1 : 0);
-        if (this.kernelTime == -1) {
-            try {
-                this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-            } catch (NoSuchConfigOptionException e) {
-                this.kernelTime = -1;
-            }
-        }
-        return damage >= this.thresholdRest || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
-    }
-
-    @Nullable
-    private EntityID convertArea(EntityID targetID) {
-        StandardEntity entity = this.worldInfo.getEntity(targetID);
-        if (entity == null) {
-            return null;
-        }
-        if (entity instanceof Human human) {
-            if (human.isPositionDefined()) {
-                EntityID position = human.getPosition();
-                if (this.worldInfo.getEntity(position) instanceof Area) {
-                    return position;
-                }
-            }
-        } else if (entity instanceof Area) {
-            return targetID;
-        } else if (entity.getStandardURN() == BLOCKADE) {
-            Blockade blockade = (Blockade) entity;
-            if (blockade.isPositionDefined()) {
-                return blockade.getPosition();
-            }
-        }
-        return null;
-    }
 
     @Nullable
     private Action calcRefugeAction(@NotNull Human human, PathPlanning pathPlanning, Collection<EntityID> targets, boolean isUnload) {
