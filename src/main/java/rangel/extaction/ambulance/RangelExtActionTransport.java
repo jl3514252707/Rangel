@@ -27,6 +27,11 @@ import java.util.List;
 
 import static rescuecore2.standard.entities.StandardEntityURN.*;
 
+/**
+ * 联合动作:运输
+ *
+ * @author 软工20-2金磊
+ */
 public class RangelExtActionTransport extends RangelExtAction {
 
     private static final LogHelper LOGGER = new LogHelper("AMBULANCE");
@@ -81,7 +86,7 @@ public class RangelExtActionTransport extends RangelExtAction {
      * @param agent        救护队
      * @param pathPlanning 路径规划
      * @param targetID     目标的id
-     * @return adf.core.agent.action.Action 动作类型
+     * @return adf.core.agent.action.Action 动作
      * @author 金磊
      * @since 2022/6/4 21:23
      */
@@ -136,22 +141,43 @@ public class RangelExtActionTransport extends RangelExtAction {
         return null;
     }
 
+    /**
+     * 计算卸载
+     * @param agent 救护队
+     * @param pathPlanning 路径规划
+     * @param transportHuman 运输的人
+     * @param targetID 目标的id,可能是人,也可能是区域
+     * @return adf.core.agent.action.Action 动作
+     * @author 软工20-2金磊
+     * @since 2022/6/19
+     */
     private Action calcUnload(AmbulanceTeam agent, PathPlanning pathPlanning, Human transportHuman, EntityID targetID) {
+        //如果没有运输的人,返回null
         if (transportHuman == null) {
             return null;
         }
+        //如果运输的人已经死亡,返回动作卸载
         if (transportHuman.isHPDefined() && transportHuman.getHP() == 0) {
             return new ActionUnload();
         }
+        //获得自身的位置
         EntityID agentPosition = agent.getPosition();
+        //如果没有目标,或者目标就是自己正在运输的人
         if (targetID == null || transportHuman.getID().getValue() == targetID.getValue()) {
+            //获得自身所在位置的实体
             StandardEntity position = this.worldInfo.getEntity(agentPosition);
+            //如果自己已经到达避难所,返回动作卸载
             if (position != null && position.getStandardURN() == REFUGE) {
                 return new ActionUnload();
+            //否则前往避难所
             } else {
+                //设置起点为自己所在的位置
                 pathPlanning.setFrom(agentPosition);
+                //设置终点为避难所
                 pathPlanning.setDestination(this.worldInfo.getEntityIDsOfType(REFUGE));
+                //计算路径
                 List<EntityID> path = pathPlanning.calc().getResult();
+                //如果路径不为null,并且长度大于0,前往目标地点,返回动作移动
                 if (path != null && path.size() > 0) {
                     return new ActionMove(path);
                 }
@@ -160,32 +186,49 @@ public class RangelExtActionTransport extends RangelExtAction {
         if (targetID == null) {
             return null;
         }
+        //获得目标实体
         StandardEntity targetEntity = this.worldInfo.getEntity(targetID);
+        //如果目标实体不为null,并且目标实体是路障,
         if (targetEntity != null && targetEntity.getStandardURN() == BLOCKADE) {
             Blockade blockade = (Blockade) targetEntity;
+            //如果路障的位置已知,
             if (blockade.isPositionDefined()) {
+                //获取路障所在位置的实体
                 targetEntity = this.worldInfo.getEntity(blockade.getPosition());
             }
         }
+        //如果目标实体是区域,
         if (targetEntity instanceof Area) {
+            //并且自身已经到达目标区域,返回动作卸载
             if (agentPosition.getValue() == targetID.getValue()) {
                 return new ActionUnload();
+            //否则前往目标地点
             } else {
+                //设置起点为自己所在的位置
                 pathPlanning.setFrom(agentPosition);
+                //设置终点为目标区域
                 pathPlanning.setDestination(targetID);
+                //计算路径
                 List<EntityID> path = pathPlanning.calc().getResult();
+                //如果路径不为null,并且长度大于0,前往目标地点,返回动作移动
                 if (path != null && path.size() > 0) {
                     return new ActionMove(path);
                 }
             }
+        //否则如果目标是个人,
         } else if (targetEntity instanceof Human human) {
+            //并且位置确定,则计算前往避难所的动作
             if (human.isPositionDefined()) {
-                return calcRefugeAction(agent, pathPlanning,
-                        Lists.newArrayList(human.getPosition()), true);
+                return calcRefugeAction(agent, pathPlanning, Lists.newArrayList(human.getPosition()), true);
             }
+            //没有计算处理,则继续
+            //设置起点为自己所在的位置
             pathPlanning.setFrom(agentPosition);
+            //设置终点为避难所
             pathPlanning.setDestination(this.worldInfo.getEntityIDsOfType(REFUGE));
+            //计算路径
             List<EntityID> path = pathPlanning.calc().getResult();
+            //如果路径不为null,并且长度大于0,前往目标地点,返回动作移动
             if (path != null && path.size() > 0) {
                 return new ActionMove(path);
             }

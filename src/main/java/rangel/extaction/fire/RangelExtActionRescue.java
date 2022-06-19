@@ -24,7 +24,7 @@ import java.util.List;
 import static rescuecore2.standard.entities.StandardEntityURN.BLOCKADE;
 
 /**
- * 动作:救援
+ * 联合动作:救援
  *
  * @author 软工20-2金磊
  */
