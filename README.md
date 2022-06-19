@@ -17,11 +17,7 @@ $ git clone https://github.com/jl3514252707/Rangel.git
 ## 3. 编译
 
 ```bash
-$ ./gradlew clean
-```
-
-```bash
-$ ./gradlew build
+$ ./scripts/compile.sh
 ```
 
 ## 4. 执行
@@ -32,20 +28,15 @@ $ ./gradlew build
 
 启动 `rcrs-server` 后，打开一个新的终端窗口并执行
 
-```bash
-$ cd script/
-```
 
 预计算启动
-
 ```bash
-$ bash launch.sh -pre 1 -t 1,0,1,0,1,0 -local&&PID=$$;sleep 120;kill $PID
+$ ./scripts/precompute.sh
 ```
 
 正常模式启动
-
 ```bash
-$ ./launch.sh -all
+$ ./scripts/launch.sh -all
 ```
 
 ## 5. 支持
