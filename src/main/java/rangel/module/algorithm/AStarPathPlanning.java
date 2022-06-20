@@ -21,10 +21,24 @@ import java.util.*;
  */
 public class AStarPathPlanning extends PathPlanning {
 
-    private Map<EntityID, Set<EntityID>> graph;
+    /**
+     * 地图上每个区域的邻居节点的Map
+     */
+    private Map<EntityID, Set<EntityID>> allNeighbors;
 
+    /**
+     * 起点
+     */
     private EntityID from;
+
+    /**
+     * 目标
+     */
     private Collection<EntityID> targets;
+
+    /**
+     * 计算出的路径
+     */
     private List<EntityID> result;
 
     public AStarPathPlanning(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
@@ -33,20 +47,29 @@ public class AStarPathPlanning extends PathPlanning {
     }
 
 
+    /**
+     * 初始化,计算地图上每个区域的邻居的节点
+     *
+     * @author 软工20-2金磊
+     * @since 2022/6/20
+     */
     private void init() {
-        Map<EntityID, Set<EntityID>> neighbours = new LazyMap<>() {
+        Map<EntityID, Set<EntityID>> allNeighbors = new LazyMap<>() {
             @Override
             public Set<EntityID> createValue() {
                 return new HashSet<>();
             }
         };
-        for (Entity next : this.worldInfo) {
-            if (next instanceof Area) {
-                Collection<EntityID> areaNeighbours = ((Area) next).getNeighbours();
-                neighbours.get(next.getID()).addAll(areaNeighbours);
+        //遍历出地图中所有的实体
+        for (Entity entity : this.worldInfo) {
+            //如果该实体是区域,
+            if (entity instanceof Area area) {
+                //则获取其所有的邻居集合
+                Collection<EntityID> areaNeighbours = area.getNeighbours();
+                allNeighbors.get(entity.getID()).addAll(areaNeighbours);
             }
         }
-        this.graph = neighbours;
+        this.allNeighbors = allNeighbors;
     }
 
 
@@ -114,7 +137,7 @@ public class AStarPathPlanning extends PathPlanning {
                 Node node = nodeMap.get(id);
                 if (n == null) {
                     n = node;
-                } else if (node.estimate() < n.estimate()) {
+                } else if (node.getF() < n.getF()) {
                     n = node;
                 }
             }
@@ -136,7 +159,7 @@ public class AStarPathPlanning extends PathPlanning {
                 //并加入到close中
                 close.add(n.getID());
                 //获取节点n的所有相邻节点
-                Collection<EntityID> neighbours = this.graph.get(n.getID());
+                Collection<EntityID> neighbours = this.allNeighbors.get(n.getID());
                 //遍历节点n所有的邻近节点
                 for (EntityID neighbour : neighbours) {
                     //邻近节点
@@ -146,10 +169,10 @@ public class AStarPathPlanning extends PathPlanning {
                         open.add(m.getID());
                         nodeMap.put(neighbour, m);
                         //如果m在open中,并且m的estimate比原来要小,则更新其父节点
-                    } else if (open.contains(neighbour) && m.estimate() < nodeMap.get(neighbour).estimate()) {
+                    } else if (open.contains(neighbour) && m.getF() < nodeMap.get(neighbour).getF()) {
                         nodeMap.put(neighbour, m);
                         //如果m不在close中,并且m的estimate比原来要小,则更新其父节点
-                    } else if (!close.contains(neighbour) && m.estimate() < nodeMap.get(neighbour).estimate()) {
+                    } else if (!close.contains(neighbour) && m.getF() < nodeMap.get(neighbour).getF()) {
                         nodeMap.put(neighbour, m);
                     }
                 }
@@ -157,45 +180,90 @@ public class AStarPathPlanning extends PathPlanning {
         }
     }
 
+
     private class Node {
 
-        EntityID id;
-        EntityID parent;
+        /**
+         * 当前节点的实体ID
+         */
+        private final EntityID id;
 
-        double cost;
-        double heuristic;
+        /**
+         * 父节点的实体ID
+         */
+        private final EntityID parent;
+
+        /**
+         * G评分-根据当前点与起始点的距离
+         */
+        private final double g;
+
+        /**
+         * H评分-根据当前点与目标点的距离
+         */
+        private final double h;
 
         public Node(Node from, EntityID id) {
             this.id = id;
 
+            //如果父节点为null,说明该点是起始点,G为0
             if (from == null) {
-                this.cost = 0;
+                this.parent = null;
+                this.g = 0;
             } else {
                 this.parent = from.getID();
-                this.cost = from.getCost() + worldInfo.getDistance(from.getID(), id);
+                this.g = from.getG() + worldInfo.getDistance(from.getID(), id);
             }
 
-            this.heuristic = worldInfo.getDistance(id, targets.toArray(new EntityID[0])[0]);
+            this.h = worldInfo.getDistance(id, (EntityID) targets.toArray()[0]);
         }
 
 
+        /**
+         * 获得本节点的实体ID
+         *
+         * @return rescuecore2.worldmodel.EntityID 实体ID
+         * @author 软工20-2金磊
+         * @since 2022/6/20
+         */
         public EntityID getID() {
             return id;
         }
 
 
-        public double getCost() {
-            return cost;
-        }
-
-
-        public double estimate() {
-            return cost + heuristic;
-        }
-
-
+        /**
+         * 获得父节点的实体ID
+         *
+         * @return rescuecore2.worldmodel.EntityID 实体ID
+         * @author 软工20-2金磊
+         * @since 2022/6/20
+         */
         public EntityID getParent() {
             return this.parent;
+        }
+
+
+        /**
+         * 获取当前点与起始点间的距离
+         *
+         * @return double G
+         * @author 软工20-2金磊
+         * @since 2022/6/20
+         */
+        public double getG() {
+            return g;
+        }
+
+
+        /**
+         * 获取总评F,F=G+H,F越小,代表该节点的优先级越大
+         *
+         * @return double F
+         * @author 软工20-2金磊
+         * @since 2022/6/20
+         */
+        public double getF() {
+            return g + h;
         }
     }
 }
